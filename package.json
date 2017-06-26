@@ -1,0 +1,13 @@
+{
+  "name": "redux-query-sync",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Treora/redux-query-sync.git"
+  },
+  "scripts": {},
+  "dependencies": {
+    "history": "^4.6.3"
+  },
+  "devDependencies": {}
+}

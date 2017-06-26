@@ -1,7 +1,21 @@
 import createHistory from 'history/createBrowserHistory'
 
-// Helps to keep configured query parameters of the window location in sync
-// (bidirectionally) with values in the Redux store.
+/**
+ * Sets up bidirectional synchronisation between a Redux store and window
+ * location query parameters.
+ *
+ * @param {Object} options.store - The redux store object (= an object `{dispatch, getState}`).
+ * @param {Object} options.params - The query parameters in the location to keep in sync.
+ * @param {*} options.params[].defaultValue - The value corresponding to absence of the
+ *     parameter.
+ * @param {function} options.params[].action - The action creator to be invoked with the parameter
+ *     value to set it in the store.
+ * @param {function} options.params[].selector - The function that gets the value given the state.
+ * @param {boolean} options.replaceState - If truthy, update location using
+ *     history.replaceState instead of history.pushState, to not fill the browser history.
+ * @param {string} options.initialTruth - If set, indicates whose values to sync to the other,
+ *     initially. Can be either 'location' or 'store'.
+ */
 function ReduxQuerySync({
     store,
     params,
@@ -110,8 +124,17 @@ function ReduxQuerySync({
     }
 }
 
-// Also offer the function as a store enhancer for convenience.
-function makeStoreEnhancer(config) {
+/**
+ * For convenience, one can set up the synchronisation by passing this enhancer to createStore.
+ *
+ * @example
+ *
+ *     const storeEnhancer = ReduxQuerySync.enhancer({params, initialTruth: 'location'})
+ *     const store = createStore(reducer, initialState, storeEnhancer)
+ *
+ * Arguments are equal to those of ReduxQuerySync itself, except that `store` can now be omitted.
+ */
+ReduxQuerySync.enhancer = function makeStoreEnhancer(config) {
     return storeCreator => (reducer, initialState, enhancer) => {
         // Create the store as usual.
         const store = storeCreator(reducer, initialState, enhancer)
@@ -122,7 +145,5 @@ function makeStoreEnhancer(config) {
         return store
     }
 }
-
-ReduxQuerySync.enhancer = makeStoreEnhancer
 
 export default ReduxQuerySync

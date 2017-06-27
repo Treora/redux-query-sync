@@ -3,13 +3,13 @@
   "description": "Synchronise URL query parameters and redux state.",
   "author": "Gerben <gerben@treora.com>",
   "keywords": ["redux", "sync", "url", "location", "query", "search", "parameters"],
-  "version": "0.1.2",
+  "version": "0.1.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Treora/redux-query-sync.git"
   },
   "license": "Unlicense",
-  "files": "lib",
+  "files": ["lib"],
   "main": "lib/redux-query-sync.js",
   "scripts": {
     "build": "babel src -d lib",

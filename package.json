@@ -1,13 +1,25 @@
 {
   "name": "redux-query-sync",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/Treora/redux-query-sync.git"
   },
-  "scripts": {},
-  "dependencies": {
-    "history": "^4.6.3"
+  "main": "lib/redux-query-sync.js",
+  "scripts": {
+    "build": "babel src -d lib",
+    "watch": "babel src -d lib -w",
+    "prepublish": "npm run build",
+    "postinstall": "postinstall-build lib"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-1": "^6.24.1"
+  },
+  "dependencies": {
+    "history": "^4.6.3",
+    "postinstall-build": "^3.0.1"
+  }
 }

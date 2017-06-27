@@ -13,6 +13,12 @@ already use [React Router][].
 [react-router-redux-sync]: https://github.com/scienceai/react-router-redux-sync
 [React Router]: https://reacttraining.com/react-router/
 
+## Install
+
+```
+npm install redux-query-sync
+```
+
 ## Usage
 
 For example, let's say we want to synchronise query parameter `p` with the value of the state's

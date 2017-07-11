@@ -11,6 +11,8 @@ import createHistory from 'history/createBrowserHistory'
  * @param {function} options.params[].action - The action creator to be invoked with the parameter
  *     value to set it in the store.
  * @param {function} options.params[].selector - The function that gets the value given the state.
+ * @param {function} [options.params[].valueToString] - Specifies how to show the value in the URL.
+ * @param {function} [options.params[].stringToValue] - The inverse of valueToString.
  * @param {boolean} options.replaceState - If truthy, update location using
  *     history.replaceState instead of history.pushState, to not fill the browser history.
  * @param {string} options.initialTruth - If set, indicates whose values to sync to the other,
@@ -40,11 +42,11 @@ function ReduxQuerySync({
         const locationParams = new URL('http://bogus' + location.search).searchParams
         const queryValues = {}
         Object.keys(params).forEach(param => {
-            const { defaultValue } = params[param]
-            let value = locationParams.get(param)
-            if (value === null) {
-                value = defaultValue
-            }
+            const { defaultValue, stringToValue = s => s } = params[param]
+            const valueString = locationParams.get(param)
+            const value = (valueString === null)
+                ? defaultValue
+                : stringToValue(valueString)
             queryValues[param] = value
         })
         return queryValues
@@ -84,12 +86,12 @@ function ReduxQuerySync({
 
         // Replace each configured parameter with its value in the state.
         Object.keys(params).forEach(param => {
-            const { selector, defaultValue } = params[param]
+            const { selector, defaultValue, valueToString = v => `${v}` } = params[param]
             const value = selector(state)
             if (value === defaultValue) {
                 locationParams.delete(param)
             } else {
-                locationParams.set(param, value)
+                locationParams.set(param, valueToString(value))
             }
         })
         const newLocationSearchString = `?${locationParams}`

@@ -21,8 +21,39 @@ npm install redux-query-sync
 
 ## Usage
 
-For example, let's say we want to synchronise query parameter `p` with the value of the state's
-`pageNumber` field:
+As a minimal example, let's say we want to synchronise query parameter `dest` with the value of the
+state's `route.destination` field, to parse/make URLs such as `directions.html?dest=Amsterdam`.
+
+**Minimal example**
+```js
+import ReduxQuerySync from 'redux-query-sync'
+
+ReduxQuerySync({
+    store,
+    params: {
+        dest: {
+            // The selector used to get the destination string from the state object.
+            selector: state => state.route.destination,
+            // The action creator for setting a new destination.
+            action: value => ({type: 'setDestination', payload: value}),
+        },
+    },
+    // Initially set the store's state to the current location.
+    initialTruth: 'location',
+})
+```
+
+Note that redux-query-sync does not modify the state, but lets you specify which action to dispatch
+when the state should be updated. It does modify the location (using
+history.[pushState][]/[replaceState][]), but ensures to only touch the parameters you specified.
+
+[pushState]: https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_pushState()_method
+[replaceState]: https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_replaceState()_method
+
+Let's look at a more elaborate example now. We sync the query parameter `p` with the value of the
+state's `pageNumber` field, which includes a mapping between string and integer.
+
+**Full example**
 ```js
 import ReduxQuerySync from 'redux-query-sync'
 
@@ -30,29 +61,29 @@ ReduxQuerySync({
     store,
     params: {
         p: {
-            // The selector used to get the value for p from the state object.
             selector: state => state.pageNumber,
-            // The action creator, providing the action to set the page number.
-            action: value => ({type: 'setPageNumber', payload: parseInt(value)}),
-            // When state.pageNumber equals '', the parameter p is hidden (and vice versa).
-            defaultValue: '',
+            action: value => ({type: 'setPageNumber', payload: value}),
+
+            // Cast the parameter value to a number (we map invalid values to 1, which will then
+            // hide the parameter).
+            stringToValue: string => Number.parseInt(string) || 1,
+
+            // We then also specify the inverse function (this example one is the default)
+            valueToString: value => `${value}`,
+
+            // When state.pageNumber equals 1, the parameter p is hidden (and vice versa).
+            defaultValue: 1,
         },
     },
-    // Set the store's state to the current location.
     initialTruth: 'location',
-    // Set replaceState if you don't want the browser's back/forward button to stop at every change.
-    replaceState: false,
+
+    // Use replaceState so the browser's back/forward button will skip over these page changes.
+    replaceState: true,
 })
 ```
 
-Note that redux-query-sync does not modify the state, but lets you specify which action to dispatch
-when the state should be updated. It does modify the location (using
-history.[pushState][]/[replaceState][]), but ensures to only touch the parameters you
-specified.
-
-
-[pushState]: https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_pushState()_method
-[replaceState]: https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_replaceState()_method
+Note you could equally well put the conversion to and from the string in the selector and action
+creator, respectively. The `defaultValue` should then of course be a string too.
 
 
 ## API
@@ -69,6 +100,8 @@ Sets up bidirectional synchronisation between a Redux store and window location 
 | options.params[].defaultValue | <code>\*</code> | The value corresponding to absence of the     parameter. |
 | options.params[].action | <code>function</code> | The action creator to be invoked with the parameter     value to set it in the store. |
 | options.params[].selector | <code>function</code> | The function that gets the value given the state. |
+| [options.params[].valueToString] | <code>function</code> | Specifies how to show the value in the URL. |
+| [options.params[].stringToValue] | <code>function</code> | The inverse of valueToString. |
 | options.replaceState | <code>boolean</code> | If truthy, update location using     history.replaceState instead of history.pushState, to not fill the browser history. |
 | options.initialTruth | <code>string</code> | If set, indicates whose values to sync to the other,     initially. Can be either `'location'` or `'store'`. |
 
@@ -79,7 +112,7 @@ Returns: a function `unsubscribe()` that can be called to stop the synchronisati
 ### ReduxQuerySync.enhancer()
 For convenience, one can set up the synchronisation by passing an enhancer to createStore.
 
-**Example**  
+**Example**
 ```js
 const storeEnhancer = ReduxQuerySync.enhancer({
     params,
@@ -90,4 +123,4 @@ const store = createStore(reducer, initialState, storeEnhancer)
 ```
 
 Arguments to `ReduxQuerySync.enhancer` are equal to those for `ReduxQuerySync` itself, except that
-`store` can now of course be omitted.
+`store` can now of course be omitted. With this approach, you cannot cancel the synchronisation.

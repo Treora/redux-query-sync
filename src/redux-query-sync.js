@@ -6,17 +6,24 @@ import createHistory from 'history/createBrowserHistory'
  *
  * @param {Object} options.store - The redux store object (= an object `{dispatch, getState}`).
  * @param {Object} options.params - The query parameters in the location to keep in sync.
- * @param {*} options.params[].defaultValue - The value corresponding to absence of the
- *     parameter.
- * @param {function} options.params[].action - The action creator to be invoked with the parameter
- *     value to set it in the store.
- * @param {function} options.params[].selector - The function that gets the value given the state.
- * @param {function} [options.params[].valueToString] - Specifies how to show the value in the URL.
- * @param {function} [options.params[].stringToValue] - The inverse of valueToString.
- * @param {boolean} options.replaceState - If truthy, update location using
- *     history.replaceState instead of history.pushState, to not fill the browser history.
+ * @param {function value => action} options.params[].action - The action creator to be invoked with
+ *     the parameter value. Should return an action that sets this value in the store.
+ * @param {function state => value} options.params[].selector - The function that gets the value
+ *     given the state.
+ * @param {*} [options.params[].defaultValue] - The value corresponding to absence of the parameter.
+ *     You may want this to equal the state's default/initial value. Default: `undefined`.
+ * @param {function} [options.params[].valueToString] - The inverse of stringToValue. Specifies how
+ *     to cast the value to a string, to be used in the URL. Defaults to javascript's automatic
+ *     string conversion.
+ * @param {function} [options.params[].stringToValue] - The inverse of valueToString. Specifies how
+ *     to parse the parameter's string value to your desired value type. Defaults to the identity
+ *     function (i.e. you get the string as it is).
  * @param {string} options.initialTruth - If set, indicates whose values to sync to the other,
- *     initially. Can be either 'location' or 'store'.
+ *     initially. Can be either `'location'` or `'store'`. If not set, the first of them that
+ *     changes will set the other, which is not recommended. Usually you will want to use
+ *     `location`.
+ * @param {boolean} [options.replaceState] - If truthy, update location using
+ *     history.replaceState instead of history.pushState, to not fill the browser history.
  */
 function ReduxQuerySync({
     store,

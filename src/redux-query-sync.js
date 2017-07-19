@@ -102,9 +102,10 @@ function ReduxQuerySync({
             }
         })
         const newLocationSearchString = `?${locationParams}`
+        const oldLocationSearchString = location.search || '?'
 
         // Only update location if anything changed.
-        if (newLocationSearchString !== location.search) {
+        if (newLocationSearchString !== oldLocationSearchString) {
             // Update location (but prevent triggering a state update).
             ignoreLocationUpdate = true
             updateLocation({search: newLocationSearchString})

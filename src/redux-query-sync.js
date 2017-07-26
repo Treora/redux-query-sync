@@ -71,7 +71,7 @@ function ReduxQuerySync({
         // For each parameter value that changed, call the corresponding action.
         Object.keys(queryValues).forEach(param => {
             const value = queryValues[param]
-            if (value !== lastQueryValues[param]) {
+            if (value && value !== lastQueryValues[param]) {
                 const { selector, action } = params[param]
                 lastQueryValues[param] = value
 
@@ -99,6 +99,7 @@ function ReduxQuerySync({
                 locationParams.delete(param)
             } else {
                 locationParams.set(param, valueToString(value))
+                lastQueryValues[param] = value
             }
         })
         const newLocationSearchString = `?${locationParams}`

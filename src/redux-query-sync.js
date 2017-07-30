@@ -43,7 +43,7 @@ function ReduxQuerySync({
     let ignoreLocationUpdate = false
 
     // Keeps the last seen values for comparing what has changed.
-    let lastQueryValues = {}
+    let lastQueryValues
 
     function getQueryValues(location) {
         const locationParams = new URL('http://bogus' + location.search).searchParams
@@ -71,9 +71,10 @@ function ReduxQuerySync({
         // For each parameter value that changed, call the corresponding action.
         Object.keys(queryValues).forEach(param => {
             const value = queryValues[param]
-            if (value !== lastQueryValues[param]) {
+            // Process the parameter both on initialisation and if it has changed since last time.
+            // (should we just do this unconditionally?)
+            if (lastQueryValues === undefined || lastQueryValues[param] !== value) {
                 const { selector, action } = params[param]
-                lastQueryValues[param] = value
 
                 // Dispatch the action to update the state if needed.
                 // (except on initialisation, this should always be needed)
@@ -82,6 +83,8 @@ function ReduxQuerySync({
                 }
             }
         })
+
+        lastQueryValues = queryValues
     }
 
     function handleStateUpdate() {

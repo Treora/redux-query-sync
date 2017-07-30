@@ -39,8 +39,9 @@ function ReduxQuerySync({
         ? history.replace.bind(history)
         : history.push.bind(history)
 
-    // A bit of state used to not respond to self-induced location updates.
+    // Two bits of state used to not respond to self-induced updates.
     let ignoreLocationUpdate = false
+    let ignoreStateUpdate = false
 
     // Keeps the last seen values for comparing what has changed.
     let lastQueryValues
@@ -68,7 +69,8 @@ function ReduxQuerySync({
         // Read the values of the watched parameters
         const queryValues = getQueryValues(location)
 
-        // For each parameter value that changed, call the corresponding action.
+        // For each parameter value that changed, we dispatch the corresponding action.
+        const actionsToDispatch = []
         Object.keys(queryValues).forEach(param => {
             const value = queryValues[param]
             // Process the parameter both on initialisation and if it has changed since last time.
@@ -79,15 +81,24 @@ function ReduxQuerySync({
                 // Dispatch the action to update the state if needed.
                 // (except on initialisation, this should always be needed)
                 if (selector(state) !== value) {
-                    dispatch(action(value))
+                    actionsToDispatch.push(action(value))
                 }
             }
         })
 
         lastQueryValues = queryValues
+
+        ignoreStateUpdate = true
+        actionsToDispatch.forEach(action => {
+            dispatch(action)
+        })
+        ignoreStateUpdate = false
+
     }
 
     function handleStateUpdate() {
+        if (ignoreStateUpdate) return
+
         const state = store.getState()
         const location = history.location
 

@@ -35,10 +35,6 @@ function ReduxQuerySync({
 
     const history = createHistory()
 
-    const updateLocation = replaceState
-        ? history.replace.bind(history)
-        : history.push.bind(history)
-
     // Two bits of state used to not respond to self-induced updates.
     let ignoreLocationUpdate = false
     let ignoreStateUpdate = false
@@ -96,7 +92,7 @@ function ReduxQuerySync({
 
     }
 
-    function handleStateUpdate() {
+    function handleStateUpdate({replaceState}) {
         if (ignoreStateUpdate) return
 
         const state = store.getState()
@@ -123,14 +119,16 @@ function ReduxQuerySync({
         if (newLocationSearchString !== oldLocationSearchString) {
             // Update location (but prevent triggering a state update).
             ignoreLocationUpdate = true
-            updateLocation({search: newLocationSearchString})
+            replaceState
+                ? history.replace({search: newLocationSearchString})
+                : history.push({search: newLocationSearchString})
             ignoreLocationUpdate = false
         }
     }
 
     // Sync location to store on every location change, and vice versa.
     const unsubscribeFromLocation = history.listen(handleLocationUpdate)
-    const unsubscribeFromStore = store.subscribe(handleStateUpdate)
+    const unsubscribeFromStore = store.subscribe(() => handleStateUpdate({replaceState}))
 
     // Sync location to store now, or vice versa, or neither.
     if (initialTruth === 'location') {

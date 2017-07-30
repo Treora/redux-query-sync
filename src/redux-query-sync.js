@@ -90,6 +90,8 @@ function ReduxQuerySync({
         })
         ignoreStateUpdate = false
 
+        // Update the location the again: reducers may have e.g. corrected invalid values.
+        handleStateUpdate({replaceState: true})
     }
 
     function handleStateUpdate({replaceState}) {

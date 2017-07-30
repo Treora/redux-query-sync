@@ -140,7 +140,7 @@ function ReduxQuerySync({
         lastQueryValues = getQueryValues(history.location)
     }
     if (initialTruth === 'store') {
-        handleStateUpdate()
+        handleStateUpdate({replaceState: true})
     }
 
     return function unsubscribe() {

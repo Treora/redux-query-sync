@@ -35,15 +35,12 @@ function ReduxQuerySync({
 
     const history = createHistory()
 
-    const updateLocation = replaceState
-        ? history.replace.bind(history)
-        : history.push.bind(history)
-
-    // A bit of state used to not respond to self-induced location updates.
+    // Two bits of state used to not respond to self-induced updates.
     let ignoreLocationUpdate = false
+    let ignoreStateUpdate = false
 
     // Keeps the last seen values for comparing what has changed.
-    let lastQueryValues = {}
+    let lastQueryValues
 
     function getQueryValues(location) {
         const locationParams = new URL('http://bogus' + location.search).searchParams
@@ -68,23 +65,38 @@ function ReduxQuerySync({
         // Read the values of the watched parameters
         const queryValues = getQueryValues(location)
 
-        // For each parameter value that changed, call the corresponding action.
+        // For each parameter value that changed, we dispatch the corresponding action.
+        const actionsToDispatch = []
         Object.keys(queryValues).forEach(param => {
             const value = queryValues[param]
-            if (value !== lastQueryValues[param]) {
+            // Process the parameter both on initialisation and if it has changed since last time.
+            // (should we just do this unconditionally?)
+            if (lastQueryValues === undefined || lastQueryValues[param] !== value) {
                 const { selector, action } = params[param]
-                lastQueryValues[param] = value
 
                 // Dispatch the action to update the state if needed.
                 // (except on initialisation, this should always be needed)
                 if (selector(state) !== value) {
-                    dispatch(action(value))
+                    actionsToDispatch.push(action(value))
                 }
             }
         })
+
+        lastQueryValues = queryValues
+
+        ignoreStateUpdate = true
+        actionsToDispatch.forEach(action => {
+            dispatch(action)
+        })
+        ignoreStateUpdate = false
+
+        // Update the location the again: reducers may have e.g. corrected invalid values.
+        handleStateUpdate({replaceState: true})
     }
 
-    function handleStateUpdate() {
+    function handleStateUpdate({replaceState}) {
+        if (ignoreStateUpdate) return
+
         const state = store.getState()
         const location = history.location
 
@@ -109,14 +121,16 @@ function ReduxQuerySync({
         if (newLocationSearchString !== oldLocationSearchString) {
             // Update location (but prevent triggering a state update).
             ignoreLocationUpdate = true
-            updateLocation({search: newLocationSearchString})
+            replaceState
+                ? history.replace({search: newLocationSearchString})
+                : history.push({search: newLocationSearchString})
             ignoreLocationUpdate = false
         }
     }
 
     // Sync location to store on every location change, and vice versa.
     const unsubscribeFromLocation = history.listen(handleLocationUpdate)
-    const unsubscribeFromStore = store.subscribe(handleStateUpdate)
+    const unsubscribeFromStore = store.subscribe(() => handleStateUpdate({replaceState}))
 
     // Sync location to store now, or vice versa, or neither.
     if (initialTruth === 'location') {
@@ -126,7 +140,7 @@ function ReduxQuerySync({
         lastQueryValues = getQueryValues(history.location)
     }
     if (initialTruth === 'store') {
-        handleStateUpdate()
+        handleStateUpdate({replaceState: true})
     }
 
     return function unsubscribe() {

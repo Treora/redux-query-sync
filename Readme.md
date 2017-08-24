@@ -6,12 +6,20 @@ Treat the URL query parameters as exposed variables of your [Redux][] state. For
 Any changes to the store state are reflected in the URL. Vice versa, if the URL is changed using the
 [`history`](history) module, the changed parameters are updated in the store state.
 
-A similar solution is found in [react-router-redux-sync][], which you may prefer to use if you
-already use [React Router][].
-
 [Redux]: http://redux.js.org/
-[react-router-redux-sync]: https://github.com/scienceai/react-router-redux-sync
 [React Router]: https://reacttraining.com/react-router/
+
+## Alternatives
+
+Similar modules exist, which you might prefer in some scenarios:
+
+- If you already use [React Router][], also have a look at [react-router-redux-sync][].
+- If you use React without Redux, try [react-url-query][].
+
+Otherwise, keep reading.
+
+[react-router-redux-sync]: https://github.com/scienceai/react-router-redux-sync
+[react-url-query]: https://github.com/pbeshai/react-url-query
 
 ## Install
 

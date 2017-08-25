@@ -30,10 +30,9 @@ function ReduxQuerySync({
     params,
     replaceState,
     initialTruth,
+    history = createHistory(),
 }) {
     const { dispatch } = store
-
-    const history = createHistory()
 
     // Two bits of state used to not respond to self-induced updates.
     let ignoreLocationUpdate = false

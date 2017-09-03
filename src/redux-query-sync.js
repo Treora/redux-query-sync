@@ -30,10 +30,9 @@ function ReduxQuerySync({
     params,
     replaceState,
     initialTruth,
+    history = createHistory(),
 }) {
     const { dispatch } = store
-
-    const history = createHistory()
 
     // Two bits of state used to not respond to self-induced updates.
     let ignoreLocationUpdate = false
@@ -41,6 +40,15 @@ function ReduxQuerySync({
 
     // Keeps the last seen values for comparing what has changed.
     let lastQueryValues
+
+    //this method is to support old version of history package
+    function getLocation(history) {
+        if (Object.hasOwnProperty.call(history, 'location')) {
+            return history.location;
+        } else if (Object.hasOwnProperty.call(history, 'getCurrentLocation')) {
+            return history.getCurrentLocation();
+        }
+    }
 
     function getQueryValues(location) {
         const locationParams = new URL('http://bogus' + location.search).searchParams
@@ -98,7 +106,7 @@ function ReduxQuerySync({
         if (ignoreStateUpdate) return
 
         const state = store.getState()
-        const location = history.location
+        const location = getLocation(history);
 
         // Parse the current location's query string.
         const locationParams = new URL('http://bogus' + location.search).searchParams
@@ -122,8 +130,8 @@ function ReduxQuerySync({
             // Update location (but prevent triggering a state update).
             ignoreLocationUpdate = true
             replaceState
-                ? history.replace({search: newLocationSearchString})
-                : history.push({search: newLocationSearchString})
+                ? history.replace({pathname: location.pathname, search: newLocationSearchString})
+                : history.push({pathname: location.pathname, search: newLocationSearchString})
             ignoreLocationUpdate = false
         }
     }
@@ -134,10 +142,10 @@ function ReduxQuerySync({
 
     // Sync location to store now, or vice versa, or neither.
     if (initialTruth === 'location') {
-        handleLocationUpdate(history.location)
+        handleLocationUpdate(getLocation(history))
     } else {
         // Just set the last seen values to later compare what changed.
-        lastQueryValues = getQueryValues(history.location)
+        lastQueryValues = getQueryValues(getLocation(history))
     }
     if (initialTruth === 'store') {
         handleStateUpdate({replaceState: true})

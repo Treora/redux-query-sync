@@ -112,6 +112,8 @@ Sets up bidirectional synchronisation between a Redux store and window location 
 | [options.params[].stringToValue] | <code>function</code> | The inverse of valueToString. Specifies how to parse the parameter's string value to your desired value type. Defaults to the identity function (i.e. you get the string as it is). |
 | options.initialTruth | <code>string</code> | If set, indicates whose values to sync to the other, initially. Can be either `'location'` or `'store'`. If not set, the first of them that changes will set the other, which is not recommended. Usually you will want to use `location`. |
 | [options.replaceState] | <code>boolean</code> | If truthy, update location using `history.replaceState` instead of `history.pushState`, to not add entries to the browser history. Default: false |
+| [options.history] | <code>Object</code> | If you use the 'history' module, e.g. when using a router, pass your history object here in order to ensure all code uses the same instance. |
+
 
 Returns: a function `unsubscribe()` that can be called to stop the synchronisation.
 

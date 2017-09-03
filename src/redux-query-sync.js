@@ -24,6 +24,8 @@ import createHistory from 'history/createBrowserHistory'
  *     `location`.
  * @param {boolean} [options.replaceState] - If truthy, update location using
  *     history.replaceState instead of history.pushState, to not fill the browser history.
+ * @param {Object} [options.history] - If you use the 'history' module, e.g. when using a router,
+ *     pass your history object here in order to ensure all code uses the same instance.
  */
 function ReduxQuerySync({
     store,
@@ -41,7 +43,7 @@ function ReduxQuerySync({
     // Keeps the last seen values for comparing what has changed.
     let lastQueryValues
 
-    //this method is to support old version of history package
+    // Helper function to support history module v3 as well as v4.
     function getLocation(history) {
         if (Object.hasOwnProperty.call(history, 'location')) {
             return history.location;

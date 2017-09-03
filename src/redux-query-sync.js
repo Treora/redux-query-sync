@@ -1,4 +1,5 @@
 import createHistory from 'history/createBrowserHistory'
+import URLSearchParams from 'url-search-params';
 
 /**
  * Sets up bidirectional synchronisation between a Redux store and window
@@ -43,7 +44,7 @@ function ReduxQuerySync({
     let lastQueryValues
 
     function getQueryValues(location) {
-        const locationParams = new URL('http://bogus' + location.search).searchParams
+        const locationParams = new URLSearchParams(location.search);
         const queryValues = {}
         Object.keys(params).forEach(param => {
             const { defaultValue, stringToValue = s => s } = params[param]
@@ -101,7 +102,7 @@ function ReduxQuerySync({
         const location = history.location
 
         // Parse the current location's query string.
-        const locationParams = new URL('http://bogus' + location.search).searchParams
+        const locationParams = new URLSearchParams(location.search);
 
         // Replace each configured parameter with its value in the state.
         Object.keys(params).forEach(param => {

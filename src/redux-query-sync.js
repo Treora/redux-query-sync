@@ -136,6 +136,7 @@ function ReduxQuerySync({
                 pathname: location.pathname,
                 search: newLocationSearchString,
                 hash: location.hash,
+                state: location.state,
             }
             replaceState
                 ? history.replace(newLocation)

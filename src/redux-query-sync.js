@@ -118,7 +118,7 @@ function ReduxQuerySync({
         Object.keys(params).forEach(param => {
             const { selector, defaultValue, valueToString = v => `${v}` } = params[param]
             const value = selector(state)
-            if (value === defaultValue) {
+            if (valueToString(value) === valueToString(defaultValue)) {
                 locationParams.delete(param)
             } else {
                 locationParams.set(param, valueToString(value))

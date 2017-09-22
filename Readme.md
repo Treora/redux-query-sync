@@ -37,12 +37,12 @@ state's `route.destination` field, to parse/make URLs such as `directions.html?d
 import ReduxQuerySync from 'redux-query-sync'
 
 ReduxQuerySync({
-    store,
+    store, // your Redux store
     params: {
         dest: {
-            // The selector used to get the destination string from the state object.
+            // The selector you use to get the destination string from the state object.
             selector: state => state.route.destination,
-            // The action creator for setting a new destination.
+            // The action creator you use for setting a new destination.
             action: value => ({type: 'setDestination', payload: value}),
         },
     },

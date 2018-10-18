@@ -1,5 +1,6 @@
 import createHistory from 'history/createBrowserHistory'
 import URLSearchParams from 'url-search-params';
+import arrayEqual from 'array-equal'
 
 /**
  * Sets up bidirectional synchronisation between a Redux store and window
@@ -19,6 +20,7 @@ import URLSearchParams from 'url-search-params';
  * @param {function} [options.params[].stringToValue] - The inverse of valueToString. Specifies how
  *     to parse the parameter's string value to your desired value type. Defaults to the identity
  *     function (i.e. you get the string as it is).
+ * @param {boolean} [options.params[].isArray] - The value is array - i.e. multiple keys are supported.
  * @param {string} options.initialTruth - If set, indicates whose values to sync to the other,
  *     initially. Can be either `'location'` or `'store'`. If not set, the first of them that
  *     changes will set the other, which is not recommended. Usually you will want to use
@@ -57,11 +59,13 @@ function ReduxQuerySync({
         const locationParams = new URLSearchParams(location.search);
         const queryValues = {}
         Object.keys(params).forEach(param => {
-            const { defaultValue, stringToValue = s => s } = params[param]
-            const valueString = locationParams.get(param)
-            const value = (valueString === null)
+            const { defaultValue, stringToValue = s => s, isArray, arrayToValue = a => a } = params[param]
+            const valueStringArray = locationParams.getAll(param)
+            const value = (valueStringArray.length === 0)
                 ? defaultValue
-                : stringToValue(valueString)
+                : (isArray
+                    ? arrayToValue(valueStringArray.map(stringToValue))
+                    : stringToValue(valueStringArray[0]))
             queryValues[param] = value
         })
         return queryValues
@@ -80,14 +84,20 @@ function ReduxQuerySync({
         const actionsToDispatch = []
         Object.keys(queryValues).forEach(param => {
             const value = queryValues[param]
+            const { isArray } = params[param]
             // Process the parameter both on initialisation and if it has changed since last time.
             // (should we just do this unconditionally?)
-            if (lastQueryValues === undefined || lastQueryValues[param] !== value) {
+            if (lastQueryValues === undefined || (isArray
+                ? !arrayEqual(lastQueryValues[param], value)
+                : lastQueryValues[param] !== value
+            )) {
                 const { selector, action } = params[param]
 
                 // Dispatch the action to update the state if needed.
                 // (except on initialisation, this should always be needed)
-                if (selector(state) !== value) {
+                if (isArray
+                    ? !arrayEqual(selector(state), value)
+                    : selector(state) !== value) {
                     actionsToDispatch.push(action(value))
                 }
             }
@@ -116,10 +126,13 @@ function ReduxQuerySync({
 
         // Replace each configured parameter with its value in the state.
         Object.keys(params).forEach(param => {
-            const { selector, defaultValue, valueToString = v => `${v}` } = params[param]
+            const { selector, defaultValue, valueToString = v => `${v}`, isArray, valueToArray = v => v } = params[param]
             const value = selector(state)
-            if (value === defaultValue) {
+            if (isArray ? arrayEqual(value, defaultValue) : value === defaultValue) {
                 locationParams.delete(param)
+            } else if (isArray) {
+                locationParams.delete(param)
+                valueToArray(value).forEach(v => locationParams.append(param, valueToString(v)))
             } else {
                 locationParams.set(param, valueToString(value))
             }

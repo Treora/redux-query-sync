@@ -20,7 +20,15 @@ import arrayEqual from 'array-equal'
  * @param {function} [options.params[].stringToValue] - The inverse of valueToString. Specifies how
  *     to parse the parameter's string value to your desired value type. Defaults to the identity
  *     function (i.e. you get the string as it is).
- * @param {boolean} [options.params[].isArray] - The value is array - i.e. multiple keys are supported.
+ * @param {boolean} [options.params[].multiple] - When true value support multiple values per key
+ *     - i.e. `key=1&key=2`. The returned value from `selector` must be an array, and the
+ *     provided value to `action` is also an array. The mappers `valueToString` and `stringToValue`
+ *     are applied to each element of the array. Mappers `valueToArray` and `arrayToValue`
+ *     can convert the whole array.
+ * @param {function} [options.params[].valueToArray] - Similar to `valueToString` but when
+ *     `multiple` is true allows to convert the whole array, rather than each individual value.
+ * @param {function} [options.params[].arrayToValue] - Similar to `stringToValue` but when
+ *     `multiple` is true allows to convert the whole array.
  * @param {string} options.initialTruth - If set, indicates whose values to sync to the other,
  *     initially. Can be either `'location'` or `'store'`. If not set, the first of them that
  *     changes will set the other, which is not recommended. Usually you will want to use
@@ -59,11 +67,16 @@ function ReduxQuerySync({
         const locationParams = new URLSearchParams(location.search);
         const queryValues = {}
         Object.keys(params).forEach(param => {
-            const { defaultValue, stringToValue = s => s, isArray, arrayToValue = a => a } = params[param]
+            const {
+                defaultValue,
+                stringToValue = s => s,
+                multiple,
+                arrayToValue = a => a
+            } = params[param]
             const valueStringArray = locationParams.getAll(param)
             const value = (valueStringArray.length === 0)
                 ? defaultValue
-                : (isArray
+                : (multiple
                     ? arrayToValue(valueStringArray.map(stringToValue))
                     : stringToValue(valueStringArray[0]))
             queryValues[param] = value
@@ -84,10 +97,10 @@ function ReduxQuerySync({
         const actionsToDispatch = []
         Object.keys(queryValues).forEach(param => {
             const value = queryValues[param]
-            const { isArray } = params[param]
+            const { multiple } = params[param]
             // Process the parameter both on initialisation and if it has changed since last time.
             // (should we just do this unconditionally?)
-            if (lastQueryValues === undefined || (isArray
+            if (lastQueryValues === undefined || (multiple
                 ? !arrayEqual(lastQueryValues[param], value)
                 : lastQueryValues[param] !== value
             )) {
@@ -95,7 +108,7 @@ function ReduxQuerySync({
 
                 // Dispatch the action to update the state if needed.
                 // (except on initialisation, this should always be needed)
-                if (isArray
+                if (multiple
                     ? !arrayEqual(selector(state), value)
                     : selector(state) !== value) {
                     actionsToDispatch.push(action(value))
@@ -126,11 +139,17 @@ function ReduxQuerySync({
 
         // Replace each configured parameter with its value in the state.
         Object.keys(params).forEach(param => {
-            const { selector, defaultValue, valueToString = v => `${v}`, isArray, valueToArray = v => v } = params[param]
+            const {
+                selector,
+                defaultValue,
+                valueToString = v => `${v}`,
+                multiple,
+                valueToArray = v => v
+            } = params[param]
             const value = selector(state)
-            if (isArray ? arrayEqual(value, defaultValue) : value === defaultValue) {
+            if (multiple ? arrayEqual(value, defaultValue) : value === defaultValue) {
                 locationParams.delete(param)
-            } else if (isArray) {
+            } else if (multiple) {
                 locationParams.delete(param)
                 valueToArray(value).forEach(v => locationParams.append(param, valueToString(v)))
             } else {

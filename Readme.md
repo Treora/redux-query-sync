@@ -82,6 +82,23 @@ ReduxQuerySync({
             // When state.pageNumber equals 1, the parameter p is hidden (and vice versa).
             defaultValue: 1,
         },
+        selection: {
+            selector: state => state.selection,
+            action: value => ({type: 'setSelection', payload: value}),
+
+            // Cast each value to a number
+            stringToValue: string => Number.parseInt(string) || 0,
+            // Convert to string
+            valueToString: value => `${value}`,
+
+            // Filter out invalid values
+            arrayToValue: array => array.filter(value => value),
+            // Filter negative values
+            valueToArray: value => value.filter(v => v > 0),
+
+            // When state.selection is empty array hide the parameter selection
+            defaultValue: []
+        },
     },
     initialTruth: 'location',
 
@@ -110,6 +127,9 @@ Sets up bidirectional synchronisation between a Redux store and window location 
 | [options.params[].defaultValue] | <code>\*</code> | The value corresponding to absence of the parameter. You may want this to equal the state's default/initial value. Default: `undefined`. |
 | [options.params[].valueToString] | <code>function</code> | Specifies how to cast the value to a string, to be used in the URL. Defaults to javascript's automatic string conversion. |
 | [options.params[].stringToValue] | <code>function</code> | The inverse of valueToString. Specifies how to parse the parameter's string value to your desired value type. Defaults to the identity function (i.e. you get the string as it is). |
+| [options.params[].multiple] | <code>boolean</code> | When true value support multiple values per key - i.e. `key=1&key=2`. The returned value from `selector` must be an array, and the provided value to `action` is also an array. The mappers `valueToString` and `stringToValue` are applied to each element of the array. Mappers `valueToArray` and `arrayToValue` can convert the whole array. |
+| [options.params[].valueToArray] | <code>function</code> | Converts the value to string array when `multiple` is true. |
+| [options.params[].arrayToValue] | <code>function</code> | Reverse convertion from string array to value. |
 | options.initialTruth | <code>string</code> | If set, indicates whose values to sync to the other, initially. Can be either `'location'` or `'store'`. If not set, the first of them that changes will set the other, which is not recommended. Usually you will want to use `location`. |
 | [options.replaceState] | <code>boolean</code> | If truthy, update location using `history.replaceState` instead of `history.pushState`, to not add entries to the browser history. Default: false |
 | [options.history] | <code>Object</code> | If you use the 'history' module, e.g. when using a router, pass your history object here in order to ensure all code uses the same instance. |

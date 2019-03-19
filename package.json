@@ -11,7 +11,7 @@
     "search",
     "parameters"
   ],
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/Treora/redux-query-sync.git"

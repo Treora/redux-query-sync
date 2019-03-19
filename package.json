@@ -22,10 +22,8 @@
   ],
   "main": "lib/redux-query-sync.js",
   "scripts": {
-    "build": "babel src -d lib",
-    "watch": "babel src -d lib -w",
-    "prepublish": "npm run build",
-    "postinstall": "postinstall-build lib"
+    "prepare": "babel src -d lib",
+    "watch": "babel src -d lib -w"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
@@ -35,7 +33,6 @@
   },
   "dependencies": {
     "history": "^4.8.0",
-    "postinstall-build": "^3.0.1",
     "url-search-params": "0.10.0"
   }
 }

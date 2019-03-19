@@ -34,7 +34,7 @@
     "babel-preset-stage-1": "^6.24.1"
   },
   "dependencies": {
-    "history": "^4.6.3",
+    "history": "^4.8.0",
     "postinstall-build": "^3.0.1",
     "url-search-params": "0.10.0"
   }

@@ -13,7 +13,11 @@ Any changes to the store state are reflected in the URL. Vice versa, if the URL 
 
 Similar modules exist, which you might prefer in some scenarios:
 
-- If you already use [React Router][], also have a look at [react-router-redux-sync][]. If you prefer combining React Router with redux-query-sync, ensure you pass them the same `history` instance (see this [explanation](https://github.com/Treora/redux-query-sync/issues/13#issuecomment-327361957)).
+- If you already use [React Router][], also have a look at [react-router-redux-sync][]. If you
+  prefer combining React Router with redux-query-sync, ensure you use `Router` ([not
+  `BrowserRouter`](https://github.com/Treora/redux-query-sync/issues/22#issue-285705363)) pass
+  them the same `history` instance (see this
+  [explanation](https://github.com/Treora/redux-query-sync/issues/13#issuecomment-327361957)).
 - If you use React without Redux, try [react-url-query][].
 
 Otherwise, keep reading.

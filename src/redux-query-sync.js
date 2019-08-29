@@ -1,5 +1,5 @@
 import { createBrowserHistory as createHistory } from 'history';
-import URLSearchParams from 'url-search-params';
+import URLSearchParams from '@ungap/url-search-params';
 
 /**
  * Sets up bidirectional synchronisation between a Redux store and window

@@ -68,6 +68,11 @@ function ReduxQuerySync({
     }
 
     function handleLocationUpdate(location) {
+        // Support history v5
+        if (location.location !== undefined) {
+            location = location.location;
+        }
+
         // Ignore the event if the location update was induced by ourselves.
         if (ignoreLocationUpdate) return
 

@@ -69,7 +69,7 @@ function ReduxQuerySync({
 
     function handleLocationUpdate(location) {
         // Support history v5
-        if (location.location != null) {
+        if (location.location !== undefined) {
             location = location.location;
         }
 

@@ -19,6 +19,8 @@ import URLSearchParams from '@ungap/url-search-params';
  * @param {function} [options.params[].stringToValue] - The inverse of valueToString. Specifies how
  *     to parse the parameter's string value to your desired value type. Defaults to the identity
  *     function (i.e. you get the string as it is).
+ * @param {function () => action} options.onParamActionsCompleted - The action creator to be invoked 
+ *     after all parameter actions have been dispatched.
  * @param {string} options.initialTruth - If set, indicates whose values to sync to the other,
  *     initially. Can be either `'location'` or `'store'`. If not set, the first of them that
  *     changes will set the other, which is not recommended. Usually you will want to use
@@ -31,6 +33,7 @@ import URLSearchParams from '@ungap/url-search-params';
 function ReduxQuerySync({
     store,
     params,
+    onParamActionsCompleted,
     replaceState,
     initialTruth,
     history = createHistory(),
@@ -104,6 +107,9 @@ function ReduxQuerySync({
         actionsToDispatch.forEach(action => {
             dispatch(action)
         })
+        if (actionsToDispatch.length > 0 && onParamActionsCompleted) {
+            dispatch(onParamActionsCompleted());
+        }
         ignoreStateUpdate = false
 
         // Update the location the again: reducers may have e.g. corrected invalid values.
